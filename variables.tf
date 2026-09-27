@@ -14,3 +14,9 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "lb_controller_version" {
+  description = "AWS Load Balancer Controller version; selects both the chart and its IAM policy."
+  type        = string
+  default     = "3.6.2"
+}
