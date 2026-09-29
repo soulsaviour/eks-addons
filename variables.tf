@@ -20,3 +20,15 @@ variable "lb_controller_version" {
   type        = string
   default     = "3.6.2"
 }
+
+variable "efs_subnet_ids" {
+  description = "Subnets for EFS mount targets. Defaults to the cluster's subnets; one is used per availability zone."
+  type        = list(string)
+  default     = []
+}
+
+variable "efs_extra_security_group_ids" {
+  description = "Security groups besides the cluster security group that may mount EFS (e.g. custom node groups)."
+  type        = list(string)
+  default     = []
+}
