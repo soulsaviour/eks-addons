@@ -1,0 +1,48 @@
+# Two pods on (possibly) different nodes and zones writing to one
+# ReadWriteMany volume on EFS.
+#   kubectl apply -f examples/efs-shared-volume.yaml
+#   kubectl -n demo exec deploy/efs-writer -- tail /data/log.txt
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: shared-data
+  namespace: demo
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-sc
+  resources:
+    requests:
+      storage: 5Gi   # EFS is elastic; the size is required but not enforced
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: efs-writer
+  namespace: demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: efs-writer
+  template:
+    metadata:
+      labels:
+        app: efs-writer
+    spec:
+      containers:
+        - name: writer
+          image: busybox:1.37
+          command: ["sh", "-c", "while true; do echo \"$(date -u) $(hostname)\" >> /data/log.txt; sleep 10; done"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: shared-data
